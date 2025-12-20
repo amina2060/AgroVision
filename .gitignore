@@ -1,0 +1,9 @@
+# Ignore dataset folder
+dataset/
+
+# Ignore ZIP files
+*.zip
+
+# Ignore system files
+.DS_Store
+Thumbs.db
