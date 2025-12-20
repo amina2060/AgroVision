@@ -1,3 +1,4 @@
+<<<<<<< HEAD
 # Leaf Disease Detection Project
 
 ## Project Structure
@@ -16,3 +17,7 @@
 ## Dataset
 
 Download the dataset from Google Drive: [link here]
+=======
+# AgroVision
+Multi-Crop Disease Detection 
+>>>>>>> 7f7075dce267f20ee420c0baaeb980f868430567
