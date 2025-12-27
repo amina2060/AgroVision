@@ -1,19 +1,59 @@
-# Ignore dataset folder
+# -----------------------------
+# Dataset folder (don't push large raw data)
+# -----------------------------
 dataset/
 
-# Ignore ZIP files
+# -----------------------------
+# ZIP and archive files
+# -----------------------------
 *.zip
+*.tar.gz
+*.tar
+*.rar
 
-# Ignore system files
+# -----------------------------
+# System / OS files
+# -----------------------------
 .DS_Store
 Thumbs.db
 
-# Ignore virtual environment
+# -----------------------------
+# Virtual environments
+# -----------------------------
 .venv/
+env/
+venv/
 
-# Ignore compiled Python files
+# -----------------------------
+# Python cache / compiled files
+# -----------------------------
 __pycache__/
 *.pyc
+*.pyo
+*.pyd
 
-# Ignore trained model files (optional if you don’t want huge files in repo)
-*.h5
+# -----------------------------
+# Jupyter Notebook checkpoints
+# -----------------------------
+.ipynb_checkpoints/
+
+# -----------------------------
+# Trained models & checkpoints
+# -----------------------------
+# If you want to push .h5 models, comment this out
+# saved_model/
+# *.h5
+checkpoints/
+last_epoch*.txt
+
+# -----------------------------
+# Logs
+# -----------------------------
+*.log
+
+# -----------------------------
+# Temporary / editor files
+# -----------------------------
+*.swp
+*.swo
+*.tmp

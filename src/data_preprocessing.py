@@ -1,46 +1,72 @@
 # src/data_preprocessing.py
-import cv2
-import numpy as np
+
+import os
+import shutil
+import tempfile
 from tensorflow.keras.preprocessing.image import ImageDataGenerator
 
-IMG_SIZE = (224, 224)
-BATCH_SIZE = 32
-SELECTED_CROPS = ['tomato', 'apple', 'rice', 'cassava', 'grape', 'corn']
+def prepare_flat_directory(original_dir):
+    """
+    Converts:
+    train/apple/apple scab/img.JPG
+    INTO:
+    temp/apple___apple scab/img.JPG
+    """
 
-def extract_leaf_features(image):
-    """Extract shape/dimension features from a leaf image"""
-    gray = cv2.cvtColor(image, cv2.COLOR_BGR2GRAY)
-    _, thresh = cv2.threshold(gray, 127, 255, cv2.THRESH_BINARY + cv2.THRESH_OTSU)
-    contours, _ = cv2.findContours(thresh, cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)
-    if not contours:
-        return np.zeros(12, dtype=np.float32)
-    cnt = max(contours, key=cv2.contourArea)
+    temp_dir = tempfile.mkdtemp()
 
-    area = cv2.contourArea(cnt)
-    perimeter = cv2.arcLength(cnt, True)
-    x, y, w, h = cv2.boundingRect(cnt)
-    aspect_ratio = float(w) / (h + 1e-5)
-    rect_area = w * h
-    extent = float(area) / (rect_area + 1e-5)
-    hull = cv2.convexHull(cnt)
-    solidity = float(area) / (cv2.contourArea(hull) + 1e-5)
-    moments = cv2.HuMoments(cv2.moments(cnt)).flatten()
-    features = [area, perimeter, aspect_ratio, extent, solidity] + moments.tolist()
-    return np.array(features, dtype=np.float32)
+    for crop in os.listdir(original_dir):
+        crop_path = os.path.join(original_dir, crop)
+        if not os.path.isdir(crop_path):
+            continue
 
-def get_data_generators(train_dir, val_dir):
-    # Only use selected crops
-    def filter_selected_crops(path, class_mode='categorical'):
-        datagen = ImageDataGenerator(rescale=1./255)
-        generator = datagen.flow_from_directory(
-            path,
-            target_size=IMG_SIZE,
-            batch_size=BATCH_SIZE,
-            classes=SELECTED_CROPS,
-            class_mode=class_mode
-        )
-        return generator
+        for disease in os.listdir(crop_path):
+            disease_path = os.path.join(crop_path, disease)
+            if not os.path.isdir(disease_path):
+                continue
 
-    train_generator = filter_selected_crops(train_dir)
-    val_generator = filter_selected_crops(val_dir)
-    return train_generator, val_generator
+            class_name = f"{crop}___{disease}"
+            class_dir = os.path.join(temp_dir, class_name)
+            os.makedirs(class_dir, exist_ok=True)
+
+            for img in os.listdir(disease_path):
+                if img.lower().endswith(".jpg"):
+                    shutil.copy(
+                        os.path.join(disease_path, img),
+                        os.path.join(class_dir, img)
+                    )
+
+    return temp_dir
+
+
+def get_data_generators(train_dir, val_dir, img_size=(224, 224), batch_size=32):
+
+    flat_train = prepare_flat_directory(train_dir)
+    flat_val   = prepare_flat_directory(val_dir)
+
+    train_datagen = ImageDataGenerator(
+        rescale=1.0 / 255,
+        rotation_range=25,
+        zoom_range=0.2,
+        horizontal_flip=True
+    )
+
+    val_datagen = ImageDataGenerator(rescale=1.0 / 255)
+
+    train_gen = train_datagen.flow_from_directory(
+        flat_train,
+        target_size=img_size,
+        batch_size=batch_size,
+        class_mode="categorical",
+        shuffle=True
+    )
+
+    val_gen = val_datagen.flow_from_directory(
+        flat_val,
+        target_size=img_size,
+        batch_size=batch_size,
+        class_mode="categorical",
+        shuffle=False
+    )
+
+    return train_gen, val_gen
