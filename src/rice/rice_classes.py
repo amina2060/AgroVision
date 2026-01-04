@@ -1,2 +1,2 @@
 # Disease classes for RICE
-CLASSES = []
+CLASSES = ['BrownSpot','Healthy', 'Hispa', 'LeafBlast']

@@ -1,2 +1,2 @@
 # Disease classes for APPLE
-CLASSES = []
+CLASSES = ['apple scab', 'black rot', 'cedar apple rust', 'healthy']
